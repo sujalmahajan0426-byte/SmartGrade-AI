@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(STUDENT)
+  
+  // Relations
+  enrollments Enrollment[]
+  assignments Assignment[] // Only if teacher
+  submissions Submission[] // Only if student
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Class {
+  id          String   @id @default(uuid())
+  name        String
+  subject     String
+  
+  // Relations
+  enrollments Enrollment[]
+  assignments Assignment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, classId])
+}
+
+model Assignment {
+  id          String   @id @default(uuid())
+  title       String
+  question    String
+  subject     String
+  dueDate     DateTime
+  
+  // Relations
+  classId     String
+  class       Class    @relation(fields: [classId], references: [id])
+  
+  teacherId   String
+  teacher     User     @relation(fields: [teacherId], references: [id])
+  
+  submissions Submission[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Submission {
+  id             String   @id @default(uuid())
+  studentAnswer  String
+  
+  // Gemini AI fields
+  score          Int?
+  grade          String?
+  percentage     Int?
+  strengths      String[] // Array of strings (PostgreSQL feature)
+  weaknesses     String[]
+  feedback       String?
+  tips           String[]
+  topics         String[]
+  encouragement  String?
+  timeToComplete String?
+  error          String?  // e.g. "ILLEGIBLE_HANDWRITING"
+  
+  // Status
+  status         SubmissionStatus @default(PENDING) // PENDING, GRADED, NEEDS_MANUAL_REVIEW
+  
+  // Relations
+  assignmentId   String
+  assignment     Assignment @relation(fields: [assignmentId], references: [id])
+  
+  studentId      String
+  student        User       @relation(fields: [studentId], references: [id])
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  PARENT
+}
+
+enum SubmissionStatus {
+  PENDING
+  GRADED
+  NEEDS_MANUAL_REVIEW
+}
