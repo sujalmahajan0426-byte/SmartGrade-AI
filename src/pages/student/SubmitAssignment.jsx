@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { gradeAssignment } from '../../utils/geminiApi';
 import LoadingAI from '../../components/LoadingAI';
 import { MdUploadFile, MdBolt } from 'react-icons/md';
 import { toast } from 'react-toastify';
-import { assignments } from '../../data/mockStudentData';
+import { assignments as fallbackAssignments } from '../../data/mockStudentData';
 
 export default function SubmitAssignment() {
     const { user } = useAuth();
     const navigate = useNavigate();
 
+    const [assignmentList, setAssignmentList] = useState(fallbackAssignments);
     const [selectedAssignment, setSelectedAssignment] = useState('');
     const [subject, setSubject] = useState('Python Programming');
     const [answer, setAnswer] = useState('');
@@ -18,6 +19,21 @@ export default function SubmitAssignment() {
     const [isGrading, setIsGrading] = useState(false);
     const [fileName, setFileName] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
+
+    useEffect(() => {
+        fetch('http://localhost:5001/api/assignments')
+            .then(res => res.json())
+            .then(res => {
+                if (res.success && res.data && res.data.length > 0) {
+                    setAssignmentList(res.data);
+                    setSelectedAssignment(res.data[0].id);
+                    if (res.data[0].subject) setSubject(res.data[0].subject);
+                }
+            })
+            .catch(() => {
+                // Keep fallback assignments
+            });
+    }, []);
 
     const subjects = ['Python Programming', 'Java Programming', 'Calculus II', 'Software Engineering', 'Computer Networks'];
     const languages = ['English', 'Hindi', 'Marathi', 'Tamil', 'Telugu', 'Bengali'];
@@ -143,13 +159,13 @@ export default function SubmitAssignment() {
                             value={selectedAssignment}
                             onChange={(e) => {
                                 setSelectedAssignment(e.target.value);
-                                const subj = assignments.find(a => a.id === e.target.value)?.subject;
+                                const subj = assignmentList.find(a => a.id === e.target.value)?.subject;
                                 if (subj) setSubject(subj);
                             }}
                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-blue outline-none transition-shadow"
                         >
                             <option value="" disabled>-- Choose an assignment --</option>
-                            {assignments.map(a => (
+                            {assignmentList.map(a => (
                                 <option key={a.id} value={a.id}>{a.title}</option>
                             ))}
                         </select>

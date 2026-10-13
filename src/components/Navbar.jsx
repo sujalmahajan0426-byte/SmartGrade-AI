@@ -40,7 +40,7 @@ export default function Navbar() {
                                 <Link to="/login" className="text-slate-600 font-medium hover:text-brand-blue transition-colors hidden sm:block">
                                     Login
                                 </Link>
-                                <Link to="/login" className="btn-primary py-2 px-6 shadow-blue-500/20">
+                                <Link to="/login?mode=signup" className="btn-primary py-2 px-6 shadow-blue-500/20">
                                     Get Started
                                 </Link>
                             </>
