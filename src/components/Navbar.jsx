@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
+import NotificationPanel from './NotificationPanel';
 
 export default function Navbar() {
     const { isAuthenticated, user, logout } = useAuth();
@@ -45,7 +46,8 @@ export default function Navbar() {
                                 </Link>
                             </>
                         ) : (
-                            <div className="flex items-center gap-5">
+                            <div className="flex items-center gap-3 sm:gap-5">
+                                <NotificationPanel />
                                 <div className="hidden sm:flex items-center gap-3">
                                     <div className="text-right">
                                         <p className="text-sm font-bold text-slate-800 leading-tight">{user.name}</p>

@@ -56,8 +56,8 @@ export default function SubmitAssignment() {
 
         try {
             // Find the specific question or use a default
-            const assignmentObj = assignments.find(a => a.id === selectedAssignment);
-            const question = assignmentObj ? assignmentObj.title : `General ${subject} Question`;
+            const assignmentObj = assignmentList.find(a => a.id === selectedAssignment);
+            const question = assignmentObj?.question || assignmentObj?.title || `General ${subject} Question`;
             const teacherContext = assignmentObj?.teacherNotes || null;
 
             let base64Image = null;
