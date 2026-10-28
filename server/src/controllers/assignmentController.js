@@ -14,10 +14,14 @@ export const listAssignments = async (req, res) => {
 
 export const addAssignment = async (req, res) => {
     try {
-        let { title, question, subject, dueDate, classId, teacherId, teacherNotes } = req.body;
+        let { title, question, subject, dueDate, classId, teacherId, teacherNotes, questionImage, questionImageMime, assignmentType, totalMarks, synopticsImage, synopticsImageMime } = req.body;
 
-        if (!title || !question || !subject) {
-            return sendError(res, 400, 'Title, question, and subject are required', 'MISSING_FIELDS');
+        if (!title || !subject) {
+            return sendError(res, 400, 'Title and subject are required', 'MISSING_FIELDS');
+        }
+
+        if (!question && !questionImage) {
+            return sendError(res, 400, 'Either a question text or question image is required', 'MISSING_FIELDS');
         }
 
         // Find or create class for subject
@@ -53,11 +57,17 @@ export const addAssignment = async (req, res) => {
 
         const assignment = await createAssignment({
             title,
-            question,
+            question: question || '[Question provided as image]',
             subject,
             dueDate: formattedDueDate,
             classId,
             teacherId,
+            questionImage: questionImage || null,
+            questionImageMime: questionImageMime || null,
+            assignmentType: assignmentType || 'REGULAR',
+            totalMarks: totalMarks || 100,
+            synopticsImage: synopticsImage || null,
+            synopticsImageMime: synopticsImageMime || null,
         });
 
         // Create notification for students

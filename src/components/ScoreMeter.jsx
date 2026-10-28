@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 
-export default function ScoreMeter({ score }) {
+export default function ScoreMeter({ score, maxScore = 100 }) {
     const [currentScore, setCurrentScore] = useState(0);
 
     useEffect(() => {
-        // Animate score from 0 up to actual score
         let start = 0;
-        const end = parseInt(score, 10);
+        const end = parseFloat(score);
         if (isNaN(end)) return;
 
         const duration = 1500;
@@ -18,21 +17,21 @@ export default function ScoreMeter({ score }) {
                 clearInterval(timer);
                 setCurrentScore(end);
             } else {
-                setCurrentScore(Math.floor(start));
+                setCurrentScore(Math.round(start * 10) / 10);
             }
         }, 16);
 
         return () => clearInterval(timer);
     }, [score]);
 
-    // Calculate SVG stroke dash array for the circular gauge
     const radius = 60;
     const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (currentScore / 100) * circumference;
+    const percentage = Math.min(100, Math.max(0, (currentScore / maxScore) * 100));
+    const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
     let colorClass = "text-brand-green";
-    if (currentScore < 40) colorClass = "text-brand-red";
-    else if (currentScore < 75) colorClass = "text-brand-yellow";
+    if (percentage < 40) colorClass = "text-brand-red";
+    else if (percentage < 75) colorClass = "text-brand-yellow";
 
     return (
         <div className="relative flex items-center justify-center w-40 h-40 mx-auto">
@@ -60,7 +59,7 @@ export default function ScoreMeter({ score }) {
             {/* Inner Content */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
                 <span className={`text-4xl font-black ${colorClass}`}>{currentScore}</span>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">/ 100</span>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">/ {maxScore}</span>
             </div>
         </div>
     );

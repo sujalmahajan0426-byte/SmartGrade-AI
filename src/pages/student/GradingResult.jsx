@@ -77,8 +77,10 @@ export default function GradingResult() {
             <div className="grid md:grid-cols-3 gap-8 mb-8">
                 {/* Score Card */}
                 <div className="md:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col items-center justify-center text-center h-full">
-                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Final Score</h3>
-                    <ScoreMeter score={result.score} />
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">
+                        {result.assignmentType === 'MTT' ? 'MTT Score' : 'Final Score'}
+                    </h3>
+                    <ScoreMeter score={result.score} maxScore={result.totalMarks || (result.assignmentType === 'MTT' ? 10 : 100)} />
 
                     <div className="mt-8 flex flex-col items-center gap-2">
                         <span className="text-sm text-slate-500 font-medium">Grade Equivalent</span>
@@ -98,10 +100,41 @@ export default function GradingResult() {
                         Teacher's Assistant AI Feedback
                     </h3>
                     <p className="text-slate-700 leading-relaxed italic text-lg relative z-10 whitespace-pre-wrap">
-                        "{result.detailed_feedback}"
+                        "{result.detailed_feedback || result.feedback || 'Great effort! Your assignment has been evaluated.'}"
                     </p>
                 </div>
             </div>
+
+            {/* MTT Question Breakdown Section */}
+            {result.question_breakdown && Array.isArray(result.question_breakdown) && result.question_breakdown.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-sm border border-emerald-200 p-6 mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">📋</span>
+                            Question-Wise Marks Breakdown (Synoptics Reference)
+                        </h2>
+                        <span className="text-xs font-semibold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-200">
+                            Total: {result.score} / {result.totalMarks || 10}
+                        </span>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        {result.question_breakdown.map((q, idx) => (
+                            <div key={idx} className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">{q.question}</span>
+                                    <span className="text-xs font-extrabold text-emerald-600 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                                        {q.marks_awarded} / {q.marks_total}
+                                    </span>
+                                </div>
+                                {q.comment && (
+                                    <p className="text-xs text-slate-600 italic mt-1 leading-snug">{q.comment}</p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* AI Deep Analysis Section */}
             {(result.knowledge_gaps || result.weak_topics || result.learning_path) && (
@@ -147,30 +180,31 @@ export default function GradingResult() {
 
                         {/* Learning Path Suggestions */}
                         {result.learning_path && (
-                            <div className="md:col-span-2 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
-                                <MdRoute className="absolute -right-4 -bottom-4 w-32 h-32 text-white/5" />
-                                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                                    <span className="w-8 h-8 rounded-lg bg-brand-blue flex items-center justify-center">🗺️</span>
+                            <div className="md:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-indigo-100 relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/60 to-purple-50/40 rounded-2xl pointer-events-none" />
+                                <MdRoute className="absolute -right-4 -bottom-4 w-32 h-32 text-indigo-200/40" />
+                                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 relative">
+                                    <span className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center">🗺️</span>
                                     Suggested Learning Path
                                 </h3>
 
-                                <div className="relative border-l-2 border-slate-700 ml-4 space-y-6 pb-2">
+                                <div className="relative border-l-2 border-indigo-200 ml-4 space-y-6 pb-2">
                                     <div className="relative pl-6">
-                                        <div className="absolute -left-[9px] top-1 w-4 h-4 bg-brand-blue rounded-full border-4 border-slate-800"></div>
-                                        <h4 className="font-bold text-blue-300 text-sm uppercase tracking-wider mb-1">Step 1: Review</h4>
-                                        <p className="text-slate-300">{result.learning_path.step1}</p>
+                                        <div className="absolute -left-[9px] top-1 w-4 h-4 bg-blue-400 rounded-full border-4 border-white"></div>
+                                        <h4 className="font-bold text-blue-600 text-sm uppercase tracking-wider mb-1">Step 1: Review</h4>
+                                        <p className="text-slate-600">{result.learning_path.step1}</p>
                                     </div>
 
                                     <div className="relative pl-6">
-                                        <div className="absolute -left-[9px] top-1 w-4 h-4 bg-brand-yellow rounded-full border-4 border-slate-800"></div>
-                                        <h4 className="font-bold text-yellow-300 text-sm uppercase tracking-wider mb-1">Step 2: Practice</h4>
-                                        <p className="text-slate-300">{result.learning_path.step2}</p>
+                                        <div className="absolute -left-[9px] top-1 w-4 h-4 bg-amber-400 rounded-full border-4 border-white"></div>
+                                        <h4 className="font-bold text-amber-600 text-sm uppercase tracking-wider mb-1">Step 2: Practice</h4>
+                                        <p className="text-slate-600">{result.learning_path.step2}</p>
                                     </div>
 
                                     <div className="relative pl-6">
-                                        <div className="absolute -left-[9px] top-1 w-4 h-4 bg-brand-green rounded-full border-4 border-slate-800"></div>
-                                        <h4 className="font-bold text-green-300 text-sm uppercase tracking-wider mb-1">Step 3: Master</h4>
-                                        <p className="text-slate-300">{result.learning_path.step3}</p>
+                                        <div className="absolute -left-[9px] top-1 w-4 h-4 bg-emerald-400 rounded-full border-4 border-white"></div>
+                                        <h4 className="font-bold text-emerald-600 text-sm uppercase tracking-wider mb-1">Step 3: Master</h4>
+                                        <p className="text-slate-600">{result.learning_path.step3}</p>
                                     </div>
                                 </div>
                             </div>
@@ -218,7 +252,7 @@ export default function GradingResult() {
                         <MdLightbulb className="w-6 h-6" /> Actionable Tips
                     </h3>
                     <ol className="space-y-4">
-                        {result.improvement_tips?.map((tip, idx) => (
+                        {(result.improvement_tips || result.tips || []).map((tip, idx) => (
                             <li key={idx} className="flex gap-4 items-start">
                                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold mt-0.5">
                                     {idx + 1}
@@ -236,7 +270,7 @@ export default function GradingResult() {
                             <MdMenuBook className="w-6 h-6" /> Recommended Reading
                         </h3>
                         <div className="flex flex-wrap gap-2">
-                            {result.recommended_topics?.map((topic, idx) => (
+                            {(result.recommended_topics || result.topics || []).map((topic, idx) => (
                                 <span key={idx} className="px-4 py-2 bg-teal-50 text-teal-700 rounded-lg text-sm font-semibold border border-teal-100">
                                     {topic}
                                 </span>
